@@ -10,3 +10,4 @@ class GuPiao(Document):
 
 
 class Zhousi(Document):
+    pass

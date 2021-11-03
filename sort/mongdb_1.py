@@ -7,6 +7,7 @@ import pymongo
 
 MONGODB_TEST = 'mongodb_test'
 MONGODB_QFUN = 'mongodb_qfun'
+MONGODB_SINA = 'mongodb_sina'
 
 MONGODB_CONFIG = {
     MONGODB_TEST: dict(
@@ -19,6 +20,11 @@ MONGODB_CONFIG = {
         db='data_report',
         col='hand_play'
     ),
+    MONGODB_SINA: dict(
+        url="mongodb://localhost:27017/",
+        db='sina',
+        col='sites'
+    )
 }
 
 
@@ -144,11 +150,12 @@ def _mongo_qfun():
 
     query = {'round_id': 'OC1004002003060152'}
 
+    # print time.time()
     # rr = mongo_qfun.find(query)
     # for x in rr:
     #     print x
-
     print time.time()
+
     rr = mongo_qfun.col.aggregate([
         {'$match': {'round_id': 'OC1004002003060152'}},
         {'$group': {'_id': '$hand_play_record.club_id', 'total': {'$sum': 1}}},
@@ -156,6 +163,7 @@ def _mongo_qfun():
     for r in rr:
         print r['_id'], r['total']
     print time.time()
+
     def _map_reduct():
         mapper = Code("""function(){emit(this.round_id, {count:1})}""")
         reduce = Code("""function(key, values){
@@ -173,5 +181,5 @@ def _mongo_qfun():
 
 
 if __name__ == '__main__':
-    _mongo_qfun()
-    # _mongo_test()
+    # _mongo_qfun()
+    _mongo_test()

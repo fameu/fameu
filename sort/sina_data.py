@@ -3,8 +3,10 @@
 import requests
 import re
 
+from sort.mongdb_1 import CMongodb, MONGODB_SINA
 
-def get_sina_data():
+
+def get_sina_data(key_list):
     """
     var hq_str_sh601006="shxxxxxx,5.900,5.900,5.890,5.910,5.880,5.890,5.900,12680536,74743067.000,4500,5.890,1347985,5.880,569200,5.870,446400,5.860,539600,5.850,1533509,5.900,769800,5.910,363510,5.920,192330,5.930,343500,5.940,2021-08-13,15:00:01,00,";
     0：”大秦铁路”，股票名字；
@@ -27,16 +29,18 @@ def get_sina_data():
     31：”15:05:32″，时间；
     :return:
     """
-
-    key_list = ['sh601006', 'sh601975']
+    'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_Bill.GetBillList?symbol=sh600905&num=60&page=1&sort=ticktime&asc=0&volume=40000&amount=0&type=0&day='
     url = 'http://hq.sinajs.cn/list={}'.format(','.join(key_list))
     headers = {
         "content-type": "application/x-www-form-urlencoded",
     }
     ret = requests.post(url, headers=headers)
     if not ret.ok:
-        pass
-    # print ret.content
+        return
+    return ret.content.decode("gbk").encode('utf8')
+
+
+def read_sina_data(content):
 
     match_regex_str = r'var hq_str_(?P<key>\w+)\=\"(?P<name>.*)\,' \
                       r'(?P<k1>\d+(\.\d+)?)\,' \
@@ -71,18 +75,24 @@ def get_sina_data():
                       r'(?P<k30>\d{4}-\d{2}-\d{2}),' \
                       r'(?P<k31>\d{2}:\d{2}:\d{2}),' \
                       r'(?P<k32>\d+),\";'
+    ret_list = []
+    for r in re.finditer(match_regex_str, content):
+        ret_list.append(r.groupdict())
+    return ret_list
 
-    ss = ret.content
-    aa = re.findall(match_regex_str, ss)
-    # print aa
-    for a in aa:
-        key = a[0]
-        name = a[1]
 
-        print "rest:", a.dict()
-    return ret.content
+def save_sina_data(data_list):
+    mongo_obj = CMongodb(MONGODB_SINA)
+    mongo_obj.insert_many(data_list)
 
 
 if __name__ == "__main__":
-    rr = get_sina_data()
-    print rr
+    key_list = ['sh601006', 'sh601975']
+    rr = get_sina_data(key_list)
+    if not rr:
+        pass
+    else:
+        data_list = read_sina_data(rr)
+        print data_list
+        save_sina_data(data_list)
+
