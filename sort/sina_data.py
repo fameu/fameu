@@ -6,6 +6,13 @@ import re
 from sort.mongdb_1 import CMongodb, MONGODB_SINA
 
 
+def get_code():
+    for page in xrange(40, start=1):
+        url = "http://51.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112404899073343549998_1635931100784&pn={}&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152&_=1635931100785".format(page)
+        ret = requests.get(url)
+
+
+
 def get_sina_data(key_list):
     """
     var hq_str_sh601006="shxxxxxx,5.900,5.900,5.890,5.910,5.880,5.890,5.900,12680536,74743067.000,4500,5.890,1347985,5.880,569200,5.870,446400,5.860,539600,5.850,1533509,5.900,769800,5.910,363510,5.920,192330,5.930,343500,5.940,2021-08-13,15:00:01,00,";
@@ -29,7 +36,6 @@ def get_sina_data(key_list):
     31：”15:05:32″，时间；
     :return:
     """
-    'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_Bill.GetBillList?symbol=sh600905&num=60&page=1&sort=ticktime&asc=0&volume=40000&amount=0&type=0&day='
     url = 'http://hq.sinajs.cn/list={}'.format(','.join(key_list))
     headers = {
         "content-type": "application/x-www-form-urlencoded",

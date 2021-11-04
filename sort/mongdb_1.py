@@ -3,6 +3,7 @@ import time
 import functools
 
 import pymongo
+from bson.code import Code
 
 
 MONGODB_TEST = 'mongodb_test'
@@ -104,9 +105,8 @@ class CMongodb(object):
         return rr
 
     @record_func_wrapper
-    def map_reduce(self, map_func, reduce_func, out_name):
-        self.col.map_reduce(map_func, reduce_func, out_name)
-        pass
+    def map_reduce(self, map_func, reduce_func, out, **kwargs):
+        return self.col.map_reduce(map_func, reduce_func, out, **kwargs)
 
 
 def _mongo_test():
@@ -140,32 +140,8 @@ def _mongo_test():
     # for r in mongo_obj.find():
     #     print r
 
-
-def _mongo_qfun():
-    from bson.code import Code
-
-    mongo_qfun = CMongodb(MONGODB_QFUN)
-    # r = mongo_qfun.find_one()
-    # print r['round_id']
-
-    query = {'round_id': 'OC1004002003060152'}
-
-    # print time.time()
-    # rr = mongo_qfun.find(query)
-    # for x in rr:
-    #     print x
-    print time.time()
-
-    rr = mongo_qfun.col.aggregate([
-        {'$match': {'round_id': 'OC1004002003060152'}},
-        {'$group': {'_id': '$hand_play_record.club_id', 'total': {'$sum': 1}}},
-    ])
-    for r in rr:
-        print r['_id'], r['total']
-    print time.time()
-
-    def _map_reduct():
-        mapper = Code("""function(){emit(this.round_id, {count:1})}""")
+    def _map_reduce():
+        mapper = Code("""function(){emit(this.name, {count:1})}""")
         reduce = Code("""function(key, values){
             var total = 0;
             for(var i=0;i<values.length;i++){
@@ -174,12 +150,73 @@ def _mongo_qfun():
             return {count:total}
         }
         """)
-        # ret = mongo_qfun.map_reduce(mapper, reduce, out_name='ret')
-        # print '----------------'
-        # for x in mongo_qfun.ret.find(query):
-        #     print x
+        ret = mongo_obj.map_reduce(mapper, reduce, out='ret')
+        print '----------------'
+        for _ in ret.result.find():
+            print _
+
+    _map_reduce()
+
+
+def _mongo_qfun():
+    """
+    without index
+    1636017431.36
+    find start
+    find end
+    1636017859.01
+    100400 102
+    1636017959.55
+
+    with index
+    1636018519.22
+    find start
+    find end
+    1636018519.38
+    100400 102
+    1636018519.39
+    """
+
+    mongo_qfun = CMongodb(MONGODB_QFUN)
+    # 查看索引
+    # for _ in mongo_qfun.col.list_indexes():
+    #     print _
+    # 查询一条数据
+    # r = mongo_qfun.find_one()
+    # print r['round_id']
+
+    # 查询数据
+    query = {'round_id': 'HC1004002003060045'}
+    # 查询语句解释
+    # print mongo_qfun.find(query).explain()
+    #
+    # print time.time()
+    # rr = mongo_qfun.find(query)
+    # for x in rr:
+    #     print x
+    # print time.time()
+    #
+    # rr = mongo_qfun.col.aggregate([
+    #     {'$match': {'round_id': 'HC1004002003060045'}},
+    #     {'$group': {'_id': '$hand_play_record.club_id', 'total': {'$sum': 1}}},
+    # ])
+    # for r in rr:
+    #     print r['_id'], r['total']
+    # print time.time()
+
+    def _map_reduce(query):
+        mapper = Code("""function(){emit(this.hand_id, 1)}""")
+        reduce = Code("""function(key, values){
+            return Array.sum(values)
+        }
+        """)
+        mongo_qfun.map_reduce(mapper, reduce, 'ret', query=query)
+        print '----------------', mongo_qfun.db.ret.find()
+        for _ in mongo_qfun.db.ret.find():
+            print _
+    _map_reduce(query)
 
 
 if __name__ == '__main__':
-    # _mongo_qfun()
+    _mongo_qfun()
     _mongo_test()
