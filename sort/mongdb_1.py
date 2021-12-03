@@ -9,6 +9,7 @@ from bson.code import Code
 MONGODB_TEST = 'mongodb_test'
 MONGODB_QFUN = 'mongodb_qfun'
 MONGODB_SINA = 'mongodb_sina'
+MONGODB_QFUN1 = 'mongodb_qfun1'
 
 MONGODB_CONFIG = {
     MONGODB_TEST: dict(
@@ -25,7 +26,12 @@ MONGODB_CONFIG = {
         url="mongodb://localhost:27017/",
         db='sina',
         col='sites'
-    )
+    ),
+    MONGODB_QFUN1: dict(
+        url="mongodb://root:2021Qfun07@192.168.101.200:27017/?authSource=admin",
+        db='data_report',
+        col='buried_data'
+    ),
 }
 
 
@@ -185,11 +191,17 @@ def _mongo_qfun():
     # r = mongo_qfun.find_one()
     # print r['round_id']
 
-    # 查询数据
-    query = {'round_id': 'HC1004002003060045'}
-    # 查询语句解释
-    # print mongo_qfun.find(query).explain()
+    # print mongo_qfun.col.count()
     #
+    # mongo_qfun1 = CMongodb(MONGODB_QFUN1)
+    # print mongo_qfun1.col.count()
+
+
+    # 查询数据
+    # query = {'round_id': 'HC1004002003060045'}
+    # # 查询语句解释
+    # print mongo_qfun.find(query).explain()
+
     # print time.time()
     # rr = mongo_qfun.find(query)
     # for x in rr:
@@ -214,9 +226,52 @@ def _mongo_qfun():
         print '----------------', mongo_qfun.db.ret.find()
         for _ in mongo_qfun.db.ret.find():
             print _
-    _map_reduce(query)
+    # _map_reduce(query)
+
+    print time.time()
+    query = {'hand_play_record.begin_time': 1583479022}
+    print mongo_qfun.find(query).explain()
+    rr = mongo_qfun.find_one(query)
+    print rr
+    print time.time()
+
+    # rr = mongo_qfun.col.aggregate([
+    #     {'$match': {'hand_play_record.club_id': '103118'}},
+    #     {'$group': {'_id': 'round_id', 'total': {'$sum': 1}}},
+    # ])
+    # for r in rr:
+    #     print r['_id'], r['total']
+    # print time.time()
+
+
+def _mongo_qfun1():
+    """ mongo保存的埋点数据 """
+    mongo_qfun1 = CMongodb(MONGODB_QFUN1)
+    # 查看索引
+    for _ in mongo_qfun1.col.list_indexes():
+        print _
+        # SON([(u'v', 2), (u'key', SON([(u'_id', 1)])), (u'name', u'_id_'), (u'ns', u'data_report.buried_data')])
+    # 查询一条数据
+    r = mongo_qfun1.find_one()
+    print r
+    # {u'event_id': u'pokernews.landing.page_view', u'activity_url': u'https://app.pokio.com/static/club-activity/pokio_news.html', u'_id': ObjectId('5e173c1f7b2ff7da1a27d1c6'), u'unique_id': u'f8af805ecd3a43ac83e22e79ae6144b9_1578581023217', u'time': 1578581023217L}
+
+    r = mongo_qfun1.col.find({"time": {'$lte': 1578581023217, '$gt': 0}})
+    for _ in r:
+        print _
+    # 282915653
+
+    # print time.time()
+    # rr = mongo_qfun1.col.aggregate([
+    #     {'$match': {"time": {'$gte': 1635673863} }},
+    #     {'$group': {'_id': '$event_id', 'total': {'$sum': 1}}},
+    # ])
+    # for r in rr:
+    #     print r['_id'], r['total']
+    # print time.time()
 
 
 if __name__ == '__main__':
-    _mongo_qfun()
-    _mongo_test()
+    _mongo_qfun1()
+    # _mongo_qfun()
+    # _mongo_test()
