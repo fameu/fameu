@@ -12,7 +12,6 @@ def get_code():
         ret = requests.get(url)
 
 
-
 def get_sina_data(key_list):
     """
     var hq_str_sh601006="shxxxxxx,5.900,5.900,5.890,5.910,5.880,5.890,5.900,12680536,74743067.000,4500,5.890,1347985,5.880,569200,5.870,446400,5.860,539600,5.850,1533509,5.900,769800,5.910,363510,5.920,192330,5.930,343500,5.940,2021-08-13,15:00:01,00,";
@@ -92,13 +91,34 @@ def save_sina_data(data_list):
     mongo_obj.insert_many(data_list)
 
 
+def calc_xxx(i, j):
+    """
+    :param i: 股票当前价格
+    :param j: 总价值
+    :return 返回由于交易费用，影响的股票的价格变动，如果要有收益，股票至少有多少变动才可以
+    """
+    cnt = j/i
+    total = j * 1/ 1000+ max(j *4 / 10000, 10) + j * 2/100000
+    print "{}, {} * 2, {} = {}".format(j * 1/ 1000, max(j *4 / 10000, 10), j * 2/100000, total)
+    print "{}".format(total*1.0/cnt)
+
+
 if __name__ == "__main__":
-    key_list = ['sh601006', 'sh601975']
-    rr = get_sina_data(key_list)
-    if not rr:
-        pass
-    else:
-        data_list = read_sina_data(rr)
-        print data_list
-        save_sina_data(data_list)
+
+    # calc_xxx(11.35, 34020)
+    # key_list = ['sh601006', 'sh601975']
+    # rr = get_sina_data(key_list)
+
+    rr = 'var hq_str_sh601006="大秦铁路,6.200,6.200,6.170,6.200,6.170,6.170,6.180,4956200,30633344.000,968200,6.170,1117400,6.160,669200,6.150,286300,6.140,464800,6.130,315800,6.180,138700,6.190,216000,6.200,324600,6.210,796100,6.220,2021-11-19,10:42:36,00,";' \
+         'var hq_str_sh601975="招商南油,1.940,1.940,1.950,1.950,1.940,1.940,1.950,4286401,8331312.000,3002399,1.940,5566400,1.930,2482500,1.920,1206400,1.910,1207500,1.900,4692679,1.950,6418166,1.960,2635240,1.970,1299873,1.980,772400,1.990,2021-11-19,10:42:27,00,";'
+
+    import pandas as pd
+    df = pd.DataFrame(rr)
+
+    # if not rr:
+    #     pass
+    # else:
+    #     data_list = read_sina_data(rr)
+    #     print data_list
+    #     save_sina_data(data_list)
 
