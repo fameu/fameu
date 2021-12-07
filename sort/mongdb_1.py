@@ -10,6 +10,8 @@ MONGODB_TEST = 'mongodb_test'
 MONGODB_QFUN = 'mongodb_qfun'
 MONGODB_SINA = 'mongodb_sina'
 MONGODB_QFUN1 = 'mongodb_qfun1'
+MONGODB_TAOBAO_HTML = 'mongodb_taobao_html'
+MONGODB_TAOBAO_GOODS = 'mongodb_taobao_goods'
 
 MONGODB_CONFIG = {
     MONGODB_TEST: dict(
@@ -22,15 +24,25 @@ MONGODB_CONFIG = {
         db='data_report',
         col='hand_play'
     ),
+    MONGODB_QFUN1: dict(
+        url="mongodb://root:2021Qfun07@192.168.101.200:27017/?authSource=admin",
+        db='data_report',
+        col='buried_data'
+    ),
     MONGODB_SINA: dict(
         url="mongodb://localhost:27017/",
         db='sina',
         col='sites'
     ),
-    MONGODB_QFUN1: dict(
-        url="mongodb://root:2021Qfun07@192.168.101.200:27017/?authSource=admin",
-        db='data_report',
-        col='buried_data'
+    MONGODB_TAOBAO_HTML: dict(
+        url="mongodb://localhost:27017/",
+        db='taobao',
+        col='sites'
+    ),
+    MONGODB_TAOBAO_GOODS: dict(
+        url="mongodb://localhost:27017/",
+        db='taobao',
+        col='goods'
     ),
 }
 
@@ -269,6 +281,31 @@ def _mongo_qfun1():
     # for r in rr:
     #     print r['_id'], r['total']
     # print time.time()
+
+
+def save_sina_data(data_list):
+    mongo_obj = CMongodb(MONGODB_SINA)
+    mongo_obj.insert_many(data_list)
+
+
+def save_taobao_data(data_list):
+    mongo_obj = CMongodb(MONGODB_TAOBAO_HTML)
+    mongo_obj.insert_many(data_list)
+
+
+def get_taotao_data(query):
+    mongo_obj = CMongodb(MONGODB_TAOBAO_HTML)
+    return mongo_obj.col.find(query)
+
+
+def save_taobao_goods(goods):
+    mongo_obj = CMongodb(MONGODB_TAOBAO_GOODS)
+    mongo_obj.insert_many(goods)
+
+
+def get_taobao_goods(query):
+    mongo_obj = CMongodb(MONGODB_TAOBAO_GOODS)
+    return mongo_obj.col.find(query)
 
 
 if __name__ == '__main__':

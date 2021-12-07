@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-
+import json
 
 import requests
 import re
 
+from sort.mongdb_1 import save_taobao_data, get_taotao_data, save_taobao_goods, get_taobao_goods
 
-def getHTMLText(url):
+
+def get_taobao_html(url):
     """
     抓取数据的时候，需要在浏览器登录，将user-ganet 和 cookie 复制过来查找数据，甚至可以通过模拟手机搜索
     """
@@ -22,39 +24,48 @@ def getHTMLText(url):
         return ""
 
 
-def parsePage(ilt, html):
-    try:
-        plt = re.findall(r'\"view_price\"\:\"[\d\.]*\"', html)
-        tlt = re.findall(r'\"raw_title\"\:\".*?\"', html)
-        for i in range(len(plt)):
-            price = eval(plt[i].split(':')[1])
-            title = eval(tlt[i].split(':')[1])
-            ilt.append([price, title])
-    except:
-        print("1312")
-
-def printGoodsList(ilt):
-    tplt = "{:4}\t{:8}\t{:16}"
-    print(tplt.format("序号","价格","商品名称"))
-    count = 0
-    for g in ilt:
-        count = count + 1
-        print(tplt.format(count,g[0],g[1]))
-
-
-def main():
-    goods = '培育钻石'
-    depth = 2
+def download_taobao_data(goods):
+    import time
+    import random
+    depth = 17
     start_url = 'https://s.taobao.com/search?q=' + goods
-    infoList = []
+    info_list = []
     for i in range(depth):
         try:
             url = start_url + '&s=' + str(44 * i)
-            html = getHTMLText(url)
-            parsePage(infoList, html)
-        except:
+            html = get_taobao_html(url)
+            info_list.append({'html': html, 'url': url, 'type': 1, 'time': time.time() / 86400 * 86400})
+            time.sleep(random.random() * 10)
+        except Exception as e:
+            print "donwload errror ", i, e
             continue
-    printGoodsList(infoList)
+    return info_list
 
 
-main()
+def parse_taobao_data(content):
+    r = r".*g_page_config = (?P<g_page_config>.+);.*g_srp_loadCss.*"
+    g_page_config, = re.match(r, content, re.S).groups()
+    item_list = json.loads(g_page_config)['mods']['itemlist']["data"]["auctions"]
+    return item_list
+
+
+if __name__ == "__main__":
+    # goods = '培育钻石'
+    # html_list = download_taobao_data(goods)
+    # save_taobao_data(html_list)
+
+    goods_list = []
+    rr = get_taotao_data({'type': 1})
+    for r in rr:
+        try:
+            _good_list = parse_taobao_data(r['html'].encode('utf-8'))
+        except:
+            print "download data error", r['url']
+            continue
+        goods_list.extend(_good_list)
+
+    save_taobao_goods(goods_list)
+
+
+
+
