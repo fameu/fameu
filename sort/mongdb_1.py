@@ -56,9 +56,9 @@ def record_func_wrapper(func):
 
     @functools.wraps(func)
     def do_record(*args, **kwargs):
-        print func.__name__, 'start'
+        print(func.__name__, 'start')
         ret = func(*args, **kwargs)
-        print func.__name__, 'end'
+        print(func.__name__, 'end')
         return ret
 
     return do_record
@@ -136,7 +136,7 @@ def _mongo_test():
         {'$group': {'_id': '$name', 'total': {'$sum': 1}}},
     ])
     for r in rr:
-        print r
+        print(r)
 
     # print '---------------'
     # for r in mongo_obj.find():
@@ -169,9 +169,9 @@ def _mongo_test():
         }
         """)
         ret = mongo_obj.map_reduce(mapper, reduce, out='ret')
-        print '----------------'
+        print('----------------')
         for _ in ret.result.find():
-            print _
+            print(_)
 
     _map_reduce()
 
@@ -235,17 +235,17 @@ def _mongo_qfun():
         }
         """)
         mongo_qfun.map_reduce(mapper, reduce, 'ret', query=query)
-        print '----------------', mongo_qfun.db.ret.find()
+        print('----------------', mongo_qfun.db.ret.find())
         for _ in mongo_qfun.db.ret.find():
-            print _
+            print(_)
     # _map_reduce(query)
 
-    print time.time()
+    print(time.time())
     query = {'hand_play_record.begin_time': 1583479022}
-    print mongo_qfun.find(query).explain()
+    print(mongo_qfun.find(query).explain())
     rr = mongo_qfun.find_one(query)
-    print rr
-    print time.time()
+    print(rr)
+    print(time.time())
 
     # rr = mongo_qfun.col.aggregate([
     #     {'$match': {'hand_play_record.club_id': '103118'}},
@@ -261,16 +261,16 @@ def _mongo_qfun1():
     mongo_qfun1 = CMongodb(MONGODB_QFUN1)
     # 查看索引
     for _ in mongo_qfun1.col.list_indexes():
-        print _
+        print(_)
         # SON([(u'v', 2), (u'key', SON([(u'_id', 1)])), (u'name', u'_id_'), (u'ns', u'data_report.buried_data')])
     # 查询一条数据
     r = mongo_qfun1.find_one()
-    print r
+    print(r)
     # {u'event_id': u'pokernews.landing.page_view', u'activity_url': u'https://app.pokio.com/static/club-activity/pokio_news.html', u'_id': ObjectId('5e173c1f7b2ff7da1a27d1c6'), u'unique_id': u'f8af805ecd3a43ac83e22e79ae6144b9_1578581023217', u'time': 1578581023217L}
 
     r = mongo_qfun1.col.find({"time": {'$lte': 1578581023217, '$gt': 0}})
     for _ in r:
-        print _
+        print(_)
     # 282915653
 
     # print time.time()

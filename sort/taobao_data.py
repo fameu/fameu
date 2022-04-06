@@ -19,6 +19,7 @@ def get_taobao_html(url):
         r = requests.get(url, timeout=30, headers=header)
         r.raise_for_status()
         r.encoding = r.apparent_encoding
+
         return r.text
     except:
         return ""
