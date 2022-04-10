@@ -1,130 +1,11 @@
 # -*- coding: utf-8 -*-
 import time
-import functools
 
-import pymongo
 from bson.code import Code
 
-
-MONGODB_TEST = 'mongodb_test'
-MONGODB_QFUN = 'mongodb_qfun'
-MONGODB_SINA = 'mongodb_sina'
-MONGODB_QFUN1 = 'mongodb_qfun1'
-MONGODB_TAOBAO_HTML = 'mongodb_taobao_html'
-MONGODB_TAOBAO_GOODS = 'mongodb_taobao_goods'
-
-MONGODB_CONFIG = {
-    MONGODB_TEST: dict(
-        url="mongodb://localhost:27017/",
-        db='test',
-        col='sites'
-    ),
-    MONGODB_QFUN: dict(
-        url="mongodb://root:2021Qfun07@192.168.101.200:27017/?authSource=admin",
-        db='data_report',
-        col='hand_play'
-    ),
-    MONGODB_QFUN1: dict(
-        url="mongodb://root:2021Qfun07@192.168.101.200:27017/?authSource=admin",
-        db='data_report',
-        col='buried_data'
-    ),
-    MONGODB_SINA: dict(
-        url="mongodb://localhost:27017/",
-        db='sina',
-        col='sites'
-    ),
-    MONGODB_TAOBAO_HTML: dict(
-        url="mongodb://localhost:27017/",
-        db='taobao',
-        col='sites'
-    ),
-    MONGODB_TAOBAO_GOODS: dict(
-        url="mongodb://localhost:27017/",
-        db='taobao',
-        col='goods'
-    ),
-}
-
-
-def record_func_wrapper(func):
-    """
-    统计函数的使用情况
-    :param func:
-    :return:
-    """
-
-    @functools.wraps(func)
-    def do_record(*args, **kwargs):
-        print(func.__name__, 'start')
-        ret = func(*args, **kwargs)
-        print(func.__name__, 'end')
-        return ret
-
-    return do_record
-
-
-class CMongodb(object):
-    """
-    mongodb 的简单用法
-    """
-
-    rds = None
-
-    def __init__(self, db_name):
-        _conf = MONGODB_CONFIG[db_name]
-        self.rds = pymongo.MongoClient(_conf['url'])
-        self.db = self.rds[_conf['db']]
-        self.col = self.db[_conf['col']]
-
-    @record_func_wrapper
-    def insert_one(self, data_dict):
-        """
-        插入一条记录，自动生成ID，并返回ID
-        :param data_dict: {key:value, key1:value1, key2:value2}
-        :return:
-        """
-        r = self.col.insert_one(data_dict)
-        return r.inserted_id
-
-    @record_func_wrapper
-    def insert_many(self, data_list):
-        """
-        批量插入多条记录，自动生成ID，并返回IDs
-        :param data_list: [{key1:value1, key2:value2}, {key1:value1, key2:value2}, ]
-        :return:
-        """
-        r = self.col.insert_many(data_list)
-        return r.inserted_ids
-
-    @record_func_wrapper
-    def find_one(self, filter=None, *args, **kwargs):
-        """
-        查找数据库中的一条记录记录
-        :return:
-        """
-        r = self.col.find_one(filter, *args, **kwargs)
-        return r
-
-    @record_func_wrapper
-    def find(self, *args, **kwargs):
-        """
-        查找数据库中记录
-        列子：
-            self.col.find()
-            self.col.find({},{ "alexa": 0 })
-            self.col.find({ "name": "RUNOOB" })
-            self.col.find({ "name": { "$gt": "H" } })
-            self.col.find({ "name": { "$regex": "^R" } })
-            self.col.find().limit(3)
-        :return:
-        """
-        rr = self.col.find(*args, **kwargs)
-        return rr
-
-    @record_func_wrapper
-    def map_reduce(self, map_func, reduce_func, out, **kwargs):
-        return self.col.map_reduce(map_func, reduce_func, out, **kwargs)
+from mongodb.config import MONGODB_QFUN1, MONGODB_QFUN, MONGODB_TEST, MONGODB_SINA, MONGODB_TAOBAO_HTML, \
+    MONGODB_TAOBAO_GOODS
+from mongodb.database import CMongodb
 
 
 def _mongo_test():
@@ -309,6 +190,6 @@ def get_taobao_goods(query):
 
 
 if __name__ == '__main__':
-    _mongo_qfun1()
+    # _mongo_qfun1()
     # _mongo_qfun()
-    # _mongo_test()
+    _mongo_test()

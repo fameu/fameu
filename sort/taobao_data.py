@@ -4,7 +4,7 @@ import json
 import requests
 import re
 
-from sort.mongdb_1 import save_taobao_data, get_taotao_data, save_taobao_goods, get_taobao_goods
+from mongodb.mongdb_1 import get_taotao_data, save_taobao_goods
 
 
 def get_taobao_html(url):
@@ -38,7 +38,7 @@ def download_taobao_data(goods):
             info_list.append({'html': html, 'url': url, 'type': 1, 'time': time.time() / 86400 * 86400})
             time.sleep(random.random() * 10)
         except Exception as e:
-            print "donwload errror ", i, e
+            print("donwload errror ", i, e)
             continue
     return info_list
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         try:
             _good_list = parse_taobao_data(r['html'].encode('utf-8'))
         except:
-            print "download data error", r['url']
+            print("download data error", r['url'])
             continue
         goods_list.extend(_good_list)
 
